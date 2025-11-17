@@ -1,5 +1,6 @@
 import React from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export default function createSafeContext<TValue extends {} | null>() {
   const context = React.createContext<TValue | undefined>(undefined);
 

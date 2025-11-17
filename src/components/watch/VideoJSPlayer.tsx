@@ -8,6 +8,7 @@ export default function VideoJSPlayer({
   options,
   onReady,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any;
   onReady: (player: Player) => void;
 }) {
@@ -27,7 +28,9 @@ export default function VideoJSPlayer({
           videoElement,
           options,
           () => {
-            onReady && onReady(player);
+            if (onReady) {
+              onReady(player);
+            }
           }
         ));
 

@@ -23,4 +23,6 @@ const MaxLineTypography = forwardRef<
   );
 });
 
+MaxLineTypography.displayName = "MaxLineTypography";
+
 export default MaxLineTypography;

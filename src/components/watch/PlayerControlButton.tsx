@@ -22,4 +22,6 @@ const PlayerControlButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   )
 );
 
+PlayerControlButton.displayName = "PlayerControlButton";
+
 export default PlayerControlButton;

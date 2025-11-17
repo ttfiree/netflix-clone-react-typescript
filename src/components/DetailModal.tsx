@@ -30,6 +30,7 @@ import VideoJSPlayer from "./watch/VideoJSPlayer";
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     children: React.ReactElement<any, any>;
   },
   ref: React.Ref<unknown>
