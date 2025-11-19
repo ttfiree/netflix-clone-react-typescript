@@ -1,4 +1,4 @@
-import withPagination from "src/hoc/withPagination";
+import withSupabasePagination from "src/hoc/withSupabasePagination";
 import { MEDIA_TYPE } from "src/types/Common";
 import { CustomGenre, Genre } from "src/types/Genre";
 import SlickSlider from "./slick-slider/SlickSlider";
@@ -11,6 +11,6 @@ export default function SliderRowForGenre({
   genre,
   mediaType,
 }: SliderRowForGenreProps) {
-  const Component = withPagination(SlickSlider, mediaType, genre);
+  const Component = withSupabasePagination(SlickSlider, mediaType, genre);
   return <Component />;
 }

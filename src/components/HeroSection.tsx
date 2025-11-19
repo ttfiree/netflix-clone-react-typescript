@@ -1,99 +1,62 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import Player from "video.js/dist/types/player";
 
 import { getRandomNumber } from "src/utils/common";
+import { getMovieUrl } from "src/utils/urlHelper";
 import MaxLineTypography from "./MaxLineTypography";
 import PlayButton from "./PlayButton";
 import MoreInfoButton from "./MoreInfoButton";
-import NetflixIconButton from "./NetflixIconButton";
 import MaturityRate from "./MaturityRate";
-import useOffSetTop from "src/hooks/useOffSetTop";
-import { useDetailModal } from "src/providers/DetailModalProvider";
 import { MEDIA_TYPE } from "src/types/Common";
 import {
-  useGetVideosByMediaTypeAndCustomGenreQuery,
-  useLazyGetAppendedVideosQuery,
-} from "src/store/slices/discover";
+  useGetVideosByCustomGenreQuery,
+} from "src/store/slices/supabaseSlice";
 import { Movie } from "src/types/Movie";
-import VideoJSPlayer from "./watch/VideoJSPlayer";
 
 interface TopTrailerProps {
   mediaType: MEDIA_TYPE;
 }
 
 export default function TopTrailer({ mediaType }: TopTrailerProps) {
-  const { data } = useGetVideosByMediaTypeAndCustomGenreQuery({
+  // 直接获取所有视频（不使用apiString）
+  const { data } = useGetVideosByCustomGenreQuery({
     mediaType,
-    apiString: "popular",
+    apiString: "all", // 使用"all"作为标识
     page: 1,
   });
-  const [getVideoDetail, { data: detail }] = useLazyGetAppendedVideosQuery();
   const [video, setVideo] = useState<Movie | null>(null);
-  const [muted, setMuted] = useState(true);
-  const playerRef = useRef<Player | null>(null);
-  const isOffset = useOffSetTop(window.innerWidth * 0.5625);
-  const { setDetailType } = useDetailModal();
   const maturityRate = useMemo(() => {
     return getRandomNumber(20);
   }, []);
 
-  const handleReady = useCallback((player: Player) => {
-    playerRef.current = player;
-  }, []);
-
   useEffect(() => {
-    if (playerRef.current) {
-      if (isOffset) {
-        playerRef.current.pause();
-      } else {
-        if (playerRef.current.paused()) {
-          playerRef.current.play();
-        }
+    if (data && data.results && data.results.length > 0) {
+      const videos = data.results.filter((item) => !!item.backdrop_path);
+      if (videos.length > 0) {
+        setVideo(videos[getRandomNumber(videos.length)]);
       }
     }
-  }, [isOffset]);
-
-  useEffect(() => {
-    if (data && data.results) {
-      const videos = data.results.filter((item) => !!item.backdrop_path);
-      setVideo(videos[getRandomNumber(videos.length)]);
-    }
   }, [data]);
-
-  useEffect(() => {
-    if (video) {
-      getVideoDetail({ mediaType, id: video.id });
-    }
-  }, [video, getVideoDetail, mediaType]);
-
-  const handleMute = useCallback((status: boolean) => {
-    if (playerRef.current) {
-      playerRef.current.muted(!status);
-      setMuted(!status);
-    }
-  }, []);
 
   return (
     <Box sx={{ position: "relative", zIndex: 1 }}>
       <Box
         sx={{
           mb: 3,
-          pb: "40%",
-          top: 0,
-          left: 0,
-          right: 0,
           position: "relative",
+          width: "100%",
+          paddingTop: "56.25%", // 16:9 比例
+          overflow: "hidden",
         }}
       >
         <Box
           sx={{
-            width: "100%",
-            height: "56.25vw",
             position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
           }}
         >
           {video && (
@@ -107,28 +70,19 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   position: "absolute",
                 }}
               >
-                {detail && (
-                  <VideoJSPlayer
-                    options={{
-                      loop: true,
-                      muted: true,
-                      autoplay: true,
-                      controls: false,
-                      responsive: true,
-                      fluid: true,
-                      techOrder: ["youtube"],
-                      sources: [
-                        {
-                          type: "video/youtube",
-                          src: `https://www.youtube.com/watch?v=${
-                            detail.videos.results[0]?.key || "L3oOldViIgY"
-                          }`,
-                        },
-                      ],
-                    }}
-                    onReady={handleReady}
-                  />
-                )}
+                {/* 背景图片 */}
+                <Box
+                  component="img"
+                  src={video.backdrop_path || video.poster_path || ""}
+                  alt={video.title}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center top",
+                  }}
+                />
+                {/* 左侧渐变遮罩 */}
                 <Box
                   sx={{
                     background: `linear-gradient(77deg,rgba(0,0,0,.6),transparent 85%)`,
@@ -141,6 +95,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     transition: "opacity .5s",
                   }}
                 />
+                {/* 底部渐变遮罩 */}
                 <Box
                   sx={{
                     backgroundColor: "transparent",
@@ -157,25 +112,16 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     width: "100%",
                   }}
                 />
-                <Stack
-                  direction="row"
-                  spacing={2}
+                {/* 年龄分级标签 */}
+                <Box
                   sx={{
-                    alignItems: "center",
                     position: "absolute",
-                    right: 0,
+                    right: { xs: 2, sm: 3 },
                     bottom: "35%",
                   }}
                 >
-                  <NetflixIconButton
-                    size="large"
-                    onClick={() => handleMute(muted)}
-                    sx={{ zIndex: 2 }}
-                  >
-                    {!muted ? <VolumeUpIcon /> : <VolumeOffIcon />}
-                  </NetflixIconButton>
                   <MaturityRate>{`${maturityRate}+`}</MaturityRate>
-                </Stack>
+                </Box>
               </Box>
 
               <Box
@@ -216,11 +162,15 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     {video.overview}
                   </MaxLineTypography>
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                    <PlayButton size="large" />
+                    <PlayButton 
+                      size="large" 
+                      videoId={video.id}
+                      videoTitle={video.title}
+                    />
                     <MoreInfoButton
                       size="large"
                       onClick={() => {
-                        setDetailType({ mediaType, id: video.id });
+                        window.open(getMovieUrl(video.id, video.title), "_blank");
                       }}
                     />
                   </Stack>

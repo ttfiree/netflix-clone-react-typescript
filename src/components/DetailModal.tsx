@@ -1,6 +1,5 @@
 import { forwardRef, useCallback, useRef, useState } from "react";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
@@ -49,7 +48,7 @@ export default function DetailModal() {
 
   const handleReady = useCallback((player: Player) => {
     playerRef.current = player;
-    setMuted(player.muted());
+    setMuted(player.muted() ?? true);
   }, []);
 
   const handleMute = useCallback((status: boolean) => {
@@ -190,8 +189,15 @@ export default function DetailModal() {
                     p: "0px !important",
                   }}
                 >
-                  <Grid container spacing={5} alignItems="center">
-                    <Grid item xs={12} sm={6} md={8}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      gap: 5,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 66%" } }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Typography
                           variant="subtitle1"
@@ -214,8 +220,8 @@ export default function DetailModal() {
                       >
                         {detail.mediaDetail?.overview}
                       </MaxLineTypography>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={4}>
+                    </Box>
+                    <Box sx={{ flex: { xs: "1 1 100%", sm: "1 1 33%" } }}>
                       <Typography variant="body2" sx={{ my: 1 }}>
                         {`Genres : ${detail.mediaDetail?.genres
                           .map((g) => g.name)
@@ -226,8 +232,8 @@ export default function DetailModal() {
                           .map((l) => l.name)
                           .join(", ")}`}
                       </Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
                 </Container>
               </Box>
             </Box>
@@ -241,13 +247,22 @@ export default function DetailModal() {
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   More Like This
                 </Typography>
-                <Grid container spacing={2}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "repeat(2, 1fr)",
+                      sm: "repeat(3, 1fr)",
+                    },
+                    gap: 2,
+                  }}
+                >
                   {similarVideos.results.map((sm) => (
-                    <Grid item xs={6} sm={4} key={sm.id}>
+                    <Box key={sm.id}>
                       <SimilarVideoCard video={sm} />
-                    </Grid>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
               </Container>
             )}
           </Box>

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
@@ -28,18 +29,29 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
       easing: theme.transitions.easing.easeIn,
     }),
     "&:focus": {
-      width: "auto",
+      width: "200px",
     },
   },
 }));
 
 export default function SearchBox() {
   const [isFocused, setIsFocused] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>();
+  const [searchValue, setSearchValue] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const handleClickSearchIcon = () => {
     if (!isFocused) {
       searchInputRef.current?.focus();
+    } else if (searchValue.trim()) {
+      // 执行搜索
+      navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && searchValue.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`);
     }
   };
 
@@ -54,7 +66,10 @@ export default function SearchBox() {
       </SearchIconWrapper>
       <StyledInputBase
         inputRef={searchInputRef}
-        placeholder="Titles, people, genres"
+        placeholder="搜索影片..."
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+        onKeyPress={handleKeyPress}
         inputProps={{
           "aria-label": "search",
           onFocus: () => {

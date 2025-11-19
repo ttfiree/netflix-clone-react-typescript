@@ -10,7 +10,6 @@ import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Movie } from "src/types/Movie";
 import { usePortal } from "src/providers/PortalProvider";
-import { useDetailModal } from "src/providers/DetailModalProvider";
 import { formatMinuteToReadable, getRandomNumber } from "src/utils/common";
 import NetflixIconButton from "./NetflixIconButton";
 import MaxLineTypography from "./MaxLineTypography";
@@ -21,6 +20,7 @@ import { useGetConfigurationQuery } from "src/store/slices/configuration";
 import { MEDIA_TYPE } from "src/types/Common";
 import { useGetGenresQuery } from "src/store/slices/genre";
 import { MAIN_PATH } from "src/constant";
+import { getMovieUrl } from "src/utils/urlHelper";
 
 interface VideoCardModalProps {
   video: Movie;
@@ -33,11 +33,13 @@ export default function VideoCardModal({
 }: VideoCardModalProps) {
   const navigate = useNavigate();
 
-  const { data: configuration } = useGetConfigurationQuery(undefined);
+  const needsConfig = video.backdrop_path && !video.backdrop_path.startsWith('http');
+  const { data: configuration } = useGetConfigurationQuery(undefined, {
+    skip: !needsConfig,
+  });
   const { data: genres } = useGetGenresQuery(MEDIA_TYPE.Movie);
   const setPortal = usePortal();
   const rect = anchorElement.getBoundingClientRect();
-  const { setDetailType } = useDetailModal();
 
   return (
     <Card
@@ -54,16 +56,32 @@ export default function VideoCardModal({
           width: "100%",
           position: "relative",
           paddingTop: "calc(9 / 16 * 100%)",
+          cursor: "pointer",
         }}
+        onClick={() => window.open(getMovieUrl(video.id, video.title), "_blank")}
       >
         <img
-          src={`${configuration?.images.base_url}w780${video.backdrop_path}`}
+          src={video.backdrop_path?.startsWith('http') 
+            ? video.backdrop_path 
+            : `${configuration?.images.base_url || 'https://image.tmdb.org/t/p/'}w780${video.backdrop_path}`}
+          alt={video.title}
           style={{
             top: 0,
             height: "100%",
             objectFit: "cover",
             position: "absolute",
             backgroundPosition: "50%",
+          }}
+        />
+        {/* 底部渐变背景 */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: "60px",
+            background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)",
           }}
         />
         <div
@@ -76,13 +94,19 @@ export default function VideoCardModal({
             bottom: 0,
             paddingLeft: "16px",
             paddingRight: "16px",
-            paddingBottom: "4px",
+            paddingBottom: "8px",
             position: "absolute",
+            zIndex: 1,
           }}
         >
           <MaxLineTypography
             maxLine={2}
-            sx={{ width: "80%", fontWeight: 700 }}
+            sx={{ 
+              width: "80%", 
+              fontWeight: 700,
+              color: "white",
+              textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+            }}
             variant="h6"
           >
             {video.title}
@@ -98,7 +122,10 @@ export default function VideoCardModal({
           <Stack direction="row" spacing={1}>
             <NetflixIconButton
               sx={{ p: 0 }}
-              onClick={() => navigate(`/${MAIN_PATH.watch}`)}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(getMovieUrl(video.id, video.title), "_blank");
+              }}
             >
               <PlayCircleIcon sx={{ width: 40, height: 40 }} />
             </NetflixIconButton>
@@ -110,8 +137,9 @@ export default function VideoCardModal({
             </NetflixIconButton>
             <div style={{ flexGrow: 1 }} />
             <NetflixIconButton
-              onClick={() => {
-                setDetailType({ mediaType: MEDIA_TYPE.Movie, id: video.id });
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(getMovieUrl(video.id, video.title), "_blank");
               }}
             >
               <ExpandMoreIcon />

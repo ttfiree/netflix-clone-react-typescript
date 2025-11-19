@@ -57,6 +57,26 @@ function SlideItem({ item }: SlideItemProps) {
   return (
     <Box sx={{ pr: { xs: 0.5, sm: 1 } }}>
       <VideoItemWithHover video={item} />
+      <Box
+        sx={{
+          mt: 0.5,
+          px: 0.5,
+        }}
+      >
+        <Box
+          component="p"
+          sx={{
+            margin: 0,
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            color: 'text.primary',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {item.title}
+        </Box>
+      </Box>
     </Box>
   );
 }
@@ -149,7 +169,7 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
             <NetflixNavigationLink
               variant="h5"
               to={`/genre/${
-                genre.id || genre.name.toLowerCase().replace(" ", "_")
+                (genre as any).type_en || genre.name.toLowerCase().replace(/\s+/g, "-")
               }`}
               sx={{
                 display: "inline-block",
@@ -162,7 +182,7 @@ export default function SlickSlider({ data, genre }: SlickSliderProps) {
                 setShowExplore(false);
               }}
             >
-              {`${genre.name} Movies `}
+              {`${genre.name} `}
               <MotionContainer
                 open={showExplore}
                 initial="initial"

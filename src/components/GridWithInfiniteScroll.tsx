@@ -1,5 +1,4 @@
 import { useRef, useEffect } from "react";
-import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -18,8 +17,8 @@ export default function GridWithInfiniteScroll({
   data,
   handleNext,
 }: GridWithInfiniteScrollProps) {
-  const intersectionRef = useRef<HTMLDivElement>(null);
-  const intersection = useIntersectionObserver(intersectionRef);
+  const intersectionRef = useRef<HTMLDivElement | null>(null);
+  const intersection = useIntersectionObserver(intersectionRef as React.RefObject<HTMLElement>);
 
   useEffect(() => {
     if (
@@ -46,22 +45,25 @@ export default function GridWithInfiniteScroll({
           variant="h5"
           sx={{ color: "text.primary", mb: 2 }}
         >{`${genre.name} Movies`}</Typography>
-        <Grid container spacing={2}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(2, 1fr)",
+              sm: "repeat(4, 1fr)",
+              md: "repeat(6, 1fr)",
+            },
+            gap: 2,
+          }}
+        >
           {data.results
             .filter((v) => !!v.backdrop_path)
             .map((video, idx) => (
-              <Grid
-                key={`${video.id}_${idx}`}
-                item
-                xs={6}
-                sm={3}
-                md={2}
-                sx={{ zIndex: 1 }}
-              >
+              <Box key={`${video.id}_${idx}`} sx={{ zIndex: 1 }}>
                 <VideoItemWithHover video={video} />
-              </Grid>
+              </Box>
             ))}
-        </Grid>
+        </Box>
       </Container>
       <Box sx={{ display: "hidden" }} ref={intersectionRef} />
     </>

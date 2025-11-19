@@ -51,6 +51,40 @@ const discoverSlice = createSlice({
         state[mediaType][itemKey].total_results = total_results;
       }
     );
+    
+    // 添加Supabase API的支持
+    builder.addMatcher(
+      (action) => {
+        return action.type.includes('supabaseApi') && 
+               action.type.includes('fulfilled') &&
+               (action.type.includes('getVideosByCustomGenre') || 
+                action.type.includes('getVideosByGenreId'));
+      },
+      (state, action: any) => {
+        if (action.payload) {
+          const {
+            page,
+            results,
+            total_pages,
+            total_results,
+            mediaType,
+            itemKey,
+          } = action.payload;
+          if (mediaType && itemKey) {
+            if (!state[mediaType]) {
+              state[mediaType] = {};
+            }
+            if (!state[mediaType][itemKey]) {
+              state[mediaType][itemKey] = initialItemState;
+            }
+            state[mediaType][itemKey].page = page;
+            state[mediaType][itemKey].results.push(...results);
+            state[mediaType][itemKey].total_pages = total_pages;
+            state[mediaType][itemKey].total_results = total_results;
+          }
+        }
+      }
+    );
   },
 });
 

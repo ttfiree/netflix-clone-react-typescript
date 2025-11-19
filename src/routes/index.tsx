@@ -20,14 +20,22 @@ const router = createBrowserRouter([
         path: MAIN_PATH.genreExplore,
         children: [
           {
-            path: ":genreId",
-            lazy: () => import("src/pages/GenreExplore"),
+            path: ":categoryEn",
+            lazy: () => import("src/pages/CategoryPage"),
           },
         ],
       },
       {
         path: MAIN_PATH.watch,
         lazy: () => import("src/pages/WatchPage"),
+      },
+      {
+        path: `${MAIN_PATH.movie}/:id/:slug?`,
+        lazy: () => import("src/pages/MovieDetailPage"),
+      },
+      {
+        path: "search",
+        lazy: () => import("src/pages/SearchPage"),
       },
     ],
   },

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -9,16 +10,24 @@ import MaxLineTypography from "./MaxLineTypography";
 import { formatMinuteToReadable, getRandomNumber } from "src/utils/common";
 import AgeLimitChip from "./AgeLimitChip";
 import { useGetConfigurationQuery } from "src/store/slices/configuration";
+import { getMovieUrl } from "src/utils/urlHelper";
 
 interface SimilarVideoCardProps {
   video: Movie;
 }
 
 export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
-  const { data: configuration } = useGetConfigurationQuery(undefined);
+  const navigate = useNavigate();
+  const needsConfig = video.backdrop_path && !video.backdrop_path.startsWith('http');
+  const { data: configuration } = useGetConfigurationQuery(undefined, {
+    skip: !needsConfig,
+  });
 
   return (
-    <Card>
+    <Card
+      sx={{ cursor: "pointer" }}
+      onClick={() => window.open(getMovieUrl(video.id, video.title), "_blank")}
+    >
       <div
         style={{
           width: "100%",
@@ -27,7 +36,10 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
         }}
       >
         <img
-          src={`${configuration?.images.base_url}w780${video.backdrop_path}`}
+          src={video.backdrop_path?.startsWith('http') 
+            ? video.backdrop_path 
+            : `${configuration?.images.base_url || 'https://image.tmdb.org/t/p/'}w780${video.backdrop_path}`}
+          alt={video.title}
           style={{
             top: 0,
             height: "100%",
