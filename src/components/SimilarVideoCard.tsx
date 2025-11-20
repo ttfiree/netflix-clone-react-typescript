@@ -11,6 +11,7 @@ import { formatMinuteToReadable, getRandomNumber } from "src/utils/common";
 import AgeLimitChip from "./AgeLimitChip";
 import { useGetConfigurationQuery } from "src/store/slices/configuration";
 import { getMovieUrl } from "src/utils/urlHelper";
+import { getBackdropSrcSet, getOptimizedBackdropUrl, shouldOptimizeImage } from "src/utils/imageOptimization";
 
 interface SimilarVideoCardProps {
   video: Movie;
@@ -22,6 +23,33 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
   const { data: configuration } = useGetConfigurationQuery(undefined, {
     skip: !needsConfig,
   });
+
+  // 获取图片 URL
+  const getImageUrl = () => {
+    if (!video.backdrop_path) return '';
+    
+    if (video.backdrop_path.startsWith('http')) {
+      // Supabase 图片优化
+      if (shouldOptimizeImage(video.backdrop_path)) {
+        return getOptimizedBackdropUrl(video.backdrop_path);
+      }
+      return video.backdrop_path;
+    }
+    
+    // TMDB 图片
+    return `${configuration?.images.base_url || 'https://image.tmdb.org/t/p/'}w780${video.backdrop_path}`;
+  };
+
+  // 获取 srcset
+  const getImageSrcSet = () => {
+    if (!video.backdrop_path?.startsWith('http')) return undefined;
+    
+    if (shouldOptimizeImage(video.backdrop_path)) {
+      return getBackdropSrcSet(video.backdrop_path);
+    }
+    
+    return undefined;
+  };
 
   return (
     <Card
@@ -36,10 +64,12 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
         }}
       >
         <img
-          src={video.backdrop_path?.startsWith('http') 
-            ? video.backdrop_path 
-            : `${configuration?.images.base_url || 'https://image.tmdb.org/t/p/'}w780${video.backdrop_path}`}
+          src={getImageUrl()}
+          srcSet={getImageSrcSet()}
+          sizes="(max-width: 600px) 400px, (max-width: 1200px) 780px, 1280px"
           alt={video.title}
+          loading="lazy"
+          decoding="async"
           style={{
             top: 0,
             height: "100%",

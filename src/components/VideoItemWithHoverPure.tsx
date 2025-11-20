@@ -2,6 +2,7 @@ import { PureComponent, ForwardedRef, forwardRef } from "react";
 
 type VideoItemWithHoverPureType = {
   src: string;
+  alt?: string;
   innerRef: ForwardedRef<HTMLDivElement>;
   handleHover: (value: boolean) => void;
 };
@@ -22,6 +23,9 @@ class VideoItemWithHoverPure extends PureComponent<VideoItemWithHoverPureType> {
       >
         <img
           src={this.props.src}
+          alt={this.props.alt || "视频封面"}
+          loading="lazy"
+          decoding="async"
           style={{
             top: 0,
             height: "100%",

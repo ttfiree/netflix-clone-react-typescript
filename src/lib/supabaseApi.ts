@@ -2,6 +2,8 @@ import { supabase } from './supabase';
 import { MacVod, MacType, ParsedPlayData } from 'src/types/Supabase';
 import { Movie, MovieDetail } from 'src/types/Movie';
 import { PaginatedMovieResult } from 'src/types/Common';
+import { ALL_CATEGORIES, getSubCategories } from 'src/constant/categories';
+import { dataCache, cacheKeys } from 'src/utils/dataCache';
 
 /**
  * 解析播放地址
@@ -152,24 +154,16 @@ export async function getVideosByType(typeId: number, page = 1, limit = 20): Pro
   console.log('offset:', offset);
   console.log('limit:', limit);
 
-  // 先检查是否是父分类
-  const { data: typeData } = await supabase
-    .from('mac_type')
-    .select('type_id, type_pid')
-    .eq('type_id', typeId)
-    .single();
-
   let typeIds = [typeId];
   
-  // 如果是父分类（type_pid = 0），获取所有子分类ID
-  if (typeData && typeData.type_pid === 0) {
-    const { data: subTypes } = await supabase
-      .from('mac_type')
-      .select('type_id')
-      .eq('type_pid', typeId);
-    
-    if (subTypes && subTypes.length > 0) {
-      typeIds = [typeId, ...subTypes.map(t => t.type_id)];
+  // 使用本地分类数据判断是否是父分类
+  const category = ALL_CATEGORIES.find(c => c.type_id === typeId);
+  
+  if (category && category.type_pid === 0) {
+    // 是父分类，获取所有子分类ID
+    const subCategories = getSubCategories(typeId);
+    if (subCategories.length > 0) {
+      typeIds = [typeId, ...subCategories.map(c => c.type_id)];
       console.log('父分类，包含子分类:', typeIds);
     }
   }
@@ -314,34 +308,63 @@ export async function getSimilarVideos(vodId: number, limit = 12): Promise<Pagin
 /**
  * 批量获取多个分类的视频（优化版）
  * 一次性获取所有分类的前N个视频
+ * 使用单次查询 + 客户端分组，减少网络请求
+ * 添加缓存支持
  */
 export async function getVideosForAllTypes(limit = 10): Promise<Record<number, PaginatedMovieResult>> {
-  // 先获取所有分类
-  const types = await getTypes();
+  // 检查缓存
+  const cacheKey = cacheKeys.allTypesVideos(limit);
+  const cached = dataCache.get<Record<number, PaginatedMovieResult>>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  // 使用本地分类数据，避免查询数据库
+  const types = ALL_CATEGORIES.filter(t => t.type_pid === 0); // 只获取一级分类
+  const typeIds = types.map(t => t.type_id);
   
   const result: Record<number, PaginatedMovieResult> = {};
   
-  // 并行获取所有分类的视频
-  await Promise.all(
-    types.map(async (type) => {
-      const { data, error } = await supabase
-        .from('mac_vod')
-        .select('*')
-        .eq('type_id', type.type_id)
-        .eq('vod_status', 1)
-        .order('vod_time', { ascending: false })
-        .limit(limit);
+  // 优化：一次性获取所有分类的视频，然后在客户端分组
+  // 每个分类获取 limit 个，总共获取 limit * typeIds.length 个
+  const totalLimit = Math.min(limit * typeIds.length, 200); // 限制最大200个
+  
+  const { data, error } = await supabase
+    .from('mac_vod')
+    .select('vod_id,vod_name,vod_en,vod_pic,vod_pic_supabase,vod_year,type_id,vod_score,vod_lang') // 只选择需要的字段
+    .in('type_id', typeIds)
+    .eq('vod_status', 1)
+    .order('vod_time', { ascending: false })
+    .limit(totalLimit);
 
-      if (!error && data) {
-        result[type.type_id] = {
-          page: 1,
-          results: data.map(convertMacVodToMovie),
-          total_pages: 1,
-          total_results: data.length,
-        };
+  if (!error && data) {
+    // 按分类分组
+    const grouped: Record<number, MacVod[]> = {};
+    
+    for (const vod of data) {
+      if (!grouped[vod.type_id]) {
+        grouped[vod.type_id] = [];
       }
-    })
-  );
+      // 每个分类最多保留 limit 个
+      if (grouped[vod.type_id].length < limit) {
+        grouped[vod.type_id].push(vod as MacVod);
+      }
+    }
+    
+    // 转换为结果格式
+    for (const typeId of typeIds) {
+      const videos = grouped[typeId] || [];
+      result[typeId] = {
+        page: 1,
+        results: videos.map(convertMacVodToMovie),
+        total_pages: 1,
+        total_results: videos.length,
+      };
+    }
+    
+    // 缓存结果（5分钟）
+    dataCache.set(cacheKey, result, 5 * 60 * 1000);
+  }
   
   return result;
 }

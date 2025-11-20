@@ -12,8 +12,9 @@ import {
 export const supabaseApi = createApi({
   reducerPath: 'supabaseApi',
   baseQuery: fakeBaseQuery(),
-  keepUnusedDataFor: 300, // 缓存5分钟
-  refetchOnMountOrArgChange: 300, // 5分钟内不重新请求
+  keepUnusedDataFor: 600, // 缓存10分钟（增加缓存时间）
+  refetchOnMountOrArgChange: 600, // 10分钟内不重新请求
+  refetchOnReconnect: false, // 重新连接时不刷新
   endpoints: (builder) => ({
     // 获取视频列表（替代popular, top_rated等）
     getVideosByCustomGenre: builder.query<

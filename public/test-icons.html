@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #141414;
+            color: #fff;
+        }
+        h1 {
+            text-align: center;
+            color: #e50914;
+        }
+        .section {
+            margin: 40px 0;
+            padding: 20px;
+            background: #222;
+            border-radius: 8px;
+        }
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .icon-item {
+            text-align: center;
+            padding: 20px;
+            background: #333;
+            border-radius: 8px;
+        }
+        .icon-item img {
+            max-width: 100%;
+            height: auto;
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .icon-item p {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .logo-demo {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: #000;
+            border-radius: 8px;
+        }
+        .success {
+            color: #46d369;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 图标测试页面</h1>
+    
+    <div class="section">
+        <h2>✅ Logo 展示</h2>
+        <div class="logo-demo">
+            <img src="/logo.png" alt="Logo" style="height: 40px;">
+            <span>导航栏 Logo (40px 高度)</span>
+        </div>
+        <div class="logo-demo" style="margin-top: 10px;">
+            <img src="/logo-large.png" alt="Logo Large" style="height: 80px;">
+            <span>大尺寸 Logo (80px 高度)</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📱 Favicon 图标</h2>
+        <div class="icon-grid">
+            <div class="icon-item">
+                <img src="/favicon-16x16.png" alt="16x16">
+                <p>16x16</p>
+            </div>
+            <div class="icon-item">
+                <img src="/favicon-32x32.png" alt="32x32">
+                <p>32x32</p>
+            </div>
+            <div class="icon-item">
+                <img src="/favicon-96x96.png" alt="96x96">
+                <p>96x96</p>
+            </div>
+            <div class="icon-item">
+                <img src="/apple-touch-icon.png" alt="180x180">
+                <p>Apple Touch Icon<br>180x180</p>
+            </div>
+            <div class="icon-item">
+                <img src="/android-chrome-192x192.png" alt="192x192">
+                <p>Android Chrome<br>192x192</p>
+            </div>
+            <div class="icon-item">
+                <img src="/android-chrome-512x512.png" alt="512x512">
+                <p>Android Chrome<br>512x512</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="success">✨ 所有图标已成功生成！</h2>
+        <p>如果您在主页面看不到新图标，请：</p>
+        <ul>
+            <li>按 <strong>Ctrl + Shift + R</strong> (Mac: Cmd + Shift + R) 硬刷新</li>
+            <li>清除浏览器缓存</li>
+            <li>使用无痕模式打开</li>
+        </ul>
+    </div>
+</body>
+</html>

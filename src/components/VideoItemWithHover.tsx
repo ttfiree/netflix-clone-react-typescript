@@ -34,6 +34,7 @@ export default function VideoItemWithHover({ video }: VideoItemWithHoverProps) {
       ref={elementRef}
       handleHover={setIsHovered}
       src={imageUrl}
+      alt={video.title || "视频封面"}
     />
   );
 }

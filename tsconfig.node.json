@@ -3,6 +3,7 @@
     "composite": true,
     "module": "ESNext",
     "moduleResolution": "Node",
+    "types": ["node"],                // 让 Node 的类型可用
     "allowSyntheticDefaultImports": true
   },
   "include": ["vite.config.ts"]

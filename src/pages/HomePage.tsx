@@ -16,16 +16,28 @@ export async function loader() {
 }
 
 export function Component() {
-  const { data: genres } = useGetGenresQuery(MEDIA_TYPE.Movie);
+  const { data: genres } = useGetGenresQuery();
   const [videosData, setVideosData] = useState<Record<number, PaginatedMovieResult>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadVideos() {
       setLoading(true);
-      const data = await getVideosForAllTypes(20);
-      setVideosData(data);
-      setLoading(false);
+      // 使用 requestIdleCallback 在浏览器空闲时加载
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(async () => {
+          const data = await getVideosForAllTypes(20);
+          setVideosData(data);
+          setLoading(false);
+        });
+      } else {
+        // 降级方案：延迟加载
+        setTimeout(async () => {
+          const data = await getVideosForAllTypes(20);
+          setVideosData(data);
+          setLoading(false);
+        }, 100);
+      }
     }
     loadVideos();
   }, []);

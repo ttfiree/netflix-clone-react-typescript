@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Movie } from "src/types/Movie";
 import { generateSlug } from "src/utils/urlHelper";
+import { getPosterSrcSet, getOptimizedPosterUrl, shouldOptimizeImage } from "src/utils/imageOptimization";
 
 interface CategoryVideoCardProps {
   video: Movie;
@@ -21,6 +22,10 @@ export default function CategoryVideoCard({ video }: CategoryVideoCardProps) {
     if (video.poster_path) {
       // 如果是完整URL（Supabase）
       if (video.poster_path.startsWith('http')) {
+        // 如果是 Supabase 图片，返回优化后的 URL
+        if (shouldOptimizeImage(video.poster_path)) {
+          return getOptimizedPosterUrl(video.poster_path);
+        }
         return video.poster_path;
       }
       // 如果是TMDB路径
@@ -28,6 +33,20 @@ export default function CategoryVideoCard({ video }: CategoryVideoCardProps) {
     }
     // 默认占位图
     return 'https://via.placeholder.com/500x750?text=No+Image';
+  };
+
+  // 生成响应式图片 srcset
+  const getSrcSet = () => {
+    if (!video.poster_path || !video.poster_path.startsWith('http')) {
+      return undefined;
+    }
+    
+    // Supabase 图片支持动态调整大小
+    if (shouldOptimizeImage(video.poster_path)) {
+      return getPosterSrcSet(video.poster_path);
+    }
+    
+    return undefined;
   };
 
   return (
@@ -60,7 +79,11 @@ export default function CategoryVideoCard({ video }: CategoryVideoCardProps) {
         <Box
           component="img"
           src={getPosterUrl()}
+          srcSet={getSrcSet()}
+          sizes="(max-width: 600px) 200px, (max-width: 900px) 300px, 500px"
           alt={video.title}
+          loading="lazy"
+          decoding="async"
           sx={{
             position: 'absolute',
             top: 0,

@@ -4,14 +4,20 @@ import { MAIN_PATH } from "src/constant";
 
 export default function Logo({ sx }: BoxProps) {
   return (
-    <RouterLink to={`/${MAIN_PATH.browse}`}>
+    <RouterLink to="/">
       <Box
         component="img"
-        alt="Netflix Logo"
-        src="/assets/netflix-logo.png"
-        width={87}
-        height={25}
+        alt="JJ影视 - 吉吉影视"
+        src="/logo.png"
+        width="75"
+        height="32"
         sx={{
+          height: { xs: 32, sm: 40 },
+          width: "auto",
+          transition: "opacity 0.3s ease",
+          "&:hover": {
+            opacity: 0.8,
+          },
           ...sx,
         }}
       />

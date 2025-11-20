@@ -10,11 +10,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: MAIN_PATH.root,
-        element: <Navigate to={`/${MAIN_PATH.browse}`} />,
+        lazy: () => import("src/pages/HomePage"),
       },
       {
         path: MAIN_PATH.browse,
-        lazy: () => import("src/pages/HomePage"),
+        element: <Navigate to="/" replace />,
       },
       {
         path: MAIN_PATH.genreExplore,

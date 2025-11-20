@@ -49,6 +49,14 @@ export default function CustomNavigation({
       {activeSlideIndex > 0 && (
         <ArrowStyle
           onClick={onPrevious}
+          role="button"
+          aria-label="上一页"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onPrevious(e as any);
+            }
+          }}
           sx={{
             left: 0,
             width: { xs: arrowWidth / 2, sm: arrowWidth },
@@ -66,6 +74,14 @@ export default function CustomNavigation({
       {!isEnd && (
         <ArrowStyle
           onClick={onNext}
+          role="button"
+          aria-label="下一页"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onNext(e as any);
+            }
+          }}
           sx={{
             right: 0,
             width: { xs: arrowWidth / 2, sm: arrowWidth },

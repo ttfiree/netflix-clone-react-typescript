@@ -1,3 +1,7 @@
+# JJ影视 - 吉吉影视
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /api/
+
+Sitemap: https://jjys.com/sitemap.xml

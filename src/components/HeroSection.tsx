@@ -13,6 +13,11 @@ import {
   useGetVideosByCustomGenreQuery,
 } from "src/store/slices/supabaseSlice";
 import { Movie } from "src/types/Movie";
+import { 
+  getBackdropSrcSet, 
+  getOptimizedBackdropUrl, 
+  shouldOptimizeImage 
+} from "src/utils/imageOptimization";
 
 interface TopTrailerProps {
   mediaType: MEDIA_TYPE;
@@ -34,7 +39,33 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
     if (data && data.results && data.results.length > 0) {
       const videos = data.results.filter((item) => !!item.backdrop_path);
       if (videos.length > 0) {
-        setVideo(videos[getRandomNumber(videos.length)]);
+        const selectedVideo = videos[getRandomNumber(videos.length)];
+        setVideo(selectedVideo);
+        
+        // 预加载 LCP 图片
+        if (selectedVideo.backdrop_path) {
+          const imageUrl = shouldOptimizeImage(selectedVideo.backdrop_path)
+            ? getOptimizedBackdropUrl(selectedVideo.backdrop_path)
+            : selectedVideo.backdrop_path;
+          
+          // 创建预加载 link
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = imageUrl;
+          link.fetchPriority = 'high';
+          
+          // 添加 srcset 支持
+          if (shouldOptimizeImage(selectedVideo.backdrop_path)) {
+            const srcSet = getBackdropSrcSet(selectedVideo.backdrop_path);
+            if (srcSet) {
+              link.setAttribute('imagesrcset', srcSet);
+              link.setAttribute('imagesizes', '100vw');
+            }
+          }
+          
+          document.head.appendChild(link);
+        }
       }
     }
   }, [data]);
@@ -70,12 +101,24 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   position: "absolute",
                 }}
               >
-                {/* 背景图片 */}
-                <Box
-                  component="img"
-                  src={video.backdrop_path || video.poster_path || ""}
+                {/* 背景图片 - LCP 优化 */}
+                <img
+                  src={
+                    shouldOptimizeImage(video.backdrop_path || video.poster_path || "")
+                      ? getOptimizedBackdropUrl(video.backdrop_path || video.poster_path || "")
+                      : video.backdrop_path || video.poster_path || ""
+                  }
+                  srcSet={
+                    shouldOptimizeImage(video.backdrop_path || video.poster_path || "")
+                      ? getBackdropSrcSet(video.backdrop_path || video.poster_path || "")
+                      : undefined
+                  }
+                  sizes="100vw"
                   alt={video.title}
-                  sx={{
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
+                  style={{
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
@@ -155,9 +198,10 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     {video.title}
                   </MaxLineTypography>
                   <MaxLineTypography
-                    variant="h5"
+                    variant="body1"
                     maxLine={3}
                     color="text.primary"
+                    sx={{ fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' } }}
                   >
                     {video.overview}
                   </MaxLineTypography>
