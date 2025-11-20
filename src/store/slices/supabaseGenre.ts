@@ -5,10 +5,11 @@ import { Genre } from 'src/types/Genre';
 export const supabaseGenreApi = createApi({
   reducerPath: 'supabaseGenreApi',
   baseQuery: fakeBaseQuery(),
-  // 设置长时间缓存
-  keepUnusedDataFor: 24 * 60 * 60, // 1小时缓存
-  refetchOnMountOrArgChange: 24 * 60 * 60, // 1小时内不重新请求
+  // 设置长时间缓存（24小时）
+  keepUnusedDataFor: 24 * 60 * 60, // 24小时缓存
+  refetchOnMountOrArgChange: 24 * 60 * 60, // 24小时内不重新请求
   refetchOnReconnect: false, // 重新连接时不刷新
+  refetchOnFocus: false, // 窗口聚焦时不刷新
   endpoints: (builder) => ({
     getGenres: builder.query<Genre[], void>({
       async queryFn() {

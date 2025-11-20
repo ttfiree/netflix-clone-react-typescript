@@ -37,6 +37,10 @@ const router = createBrowserRouter([
         path: "search",
         lazy: () => import("src/pages/SearchPage"),
       },
+      {
+        path: "actor/:id",
+        lazy: () => import("src/pages/ActorPage"),
+      },
     ],
   },
 ]);

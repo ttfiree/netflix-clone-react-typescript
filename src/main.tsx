@@ -13,6 +13,7 @@ import palette from "./theme/palette";
 import router from "./routes";
 import MainLoadingScreen from "./components/MainLoadingScreen";
 import { initWebVitals } from "./utils/webVitals";
+import "./utils/cacheManager"; // 初始化缓存管理器
 
 // 延迟配置加载，不阻塞初始渲染
 setTimeout(() => {

@@ -12,9 +12,11 @@ import QualityChip from "src/components/QualityChip";
 import { formatMinuteToReadable, getRandomNumber } from "src/utils/common";
 import SimilarVideoCard from "src/components/SimilarVideoCard";
 import { useGetVideoDetailQuery, useGetSimilarVideosQuery } from "src/store/slices/supabaseSlice";
+import { useGetVideoActorsQuery } from "src/store/slices/actorSlice";
 import { MEDIA_TYPE } from "src/types/Common";
 import { parsePlayUrl } from "src/lib/supabaseApi";
 import AppleCMSPlayer from "src/components/AppleCMSPlayer";
+import ActorList from "src/components/ActorList";
 
 export function Component() {
   const { id, slug } = useParams<{ id: string; slug?: string }>();
@@ -30,6 +32,21 @@ export function Component() {
     { mediaType: MEDIA_TYPE.Movie, id: movieId },
     { skip: !movieId }
   );
+
+  const { data: actors, isLoading: actorsLoading, error: actorsError } = useGetVideoActorsQuery(movieId, {
+    skip: !movieId,
+  });
+
+  // 调试演员数据
+  useEffect(() => {
+    console.log('演员数据查询状态:', { 
+      movieId, 
+      actors, 
+      actorsLoading, 
+      actorsError,
+      hasActors: actors && actors.length > 0 
+    });
+  }, [movieId, actors, actorsLoading, actorsError]);
 
   // 解析播放数据
   const playData = movieDetail ? parsePlayUrl(
@@ -216,6 +233,11 @@ export function Component() {
             </Typography>
           </Box>
         </Box>
+
+        {/* 演员列表 */}
+        {actors && actors.length > 0 && (
+          <ActorList actors={actors} title="演员阵容" />
+        )}
       </Container>
 
       {/* 相似电影区域 */}

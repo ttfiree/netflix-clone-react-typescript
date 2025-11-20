@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Movie } from "src/types/Movie";
@@ -7,14 +6,19 @@ import { getPosterSrcSet, getOptimizedPosterUrl, shouldOptimizeImage } from "src
 
 interface CategoryVideoCardProps {
   video: Movie;
+  openInNewTab?: boolean;
 }
 
-export default function CategoryVideoCard({ video }: CategoryVideoCardProps) {
-  const navigate = useNavigate();
-
+export default function CategoryVideoCard({ video, openInNewTab = false }: CategoryVideoCardProps) {
   const handleClick = () => {
     const slug = generateSlug(video.title, video.id);
-    navigate(`/movie/${video.id}/${slug}`);
+    const url = `/movie/${video.id}/${slug}`;
+    
+    if (openInNewTab) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
   };
 
   // 获取海报图片URL
